@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import useWebSocket, { ScoreboardData } from '@/utils/useWebSocket';
 
@@ -27,35 +26,26 @@ function TennisScoreboard({
 }: TennisScoreboardProps) {
   const baseWidth = 896;
   const baseHeight = 512;
-  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Calculate scale to fill container while maintaining aspect ratio
+  const scaleX = width / baseWidth;
+  const scaleY = height / baseHeight;
+  const scale = Math.min(scaleX, scaleY);
+
+  // Remove the centering calculations
+  const scaledWidth = baseWidth * scale;
+  const scaledHeight = baseHeight * scale;
 
   const liveData: ScoreboardData | null = useWebSocket(path, apiKey);
 
-  useEffect(() => {
-    if (containerRef.current) {
-      const scaleX = width / baseWidth;
-      const scaleY = height / baseHeight;
-      const scale = Math.min(scaleX, scaleY);
-
-      containerRef.current.style.transform = `scale(${scale})`;
-      containerRef.current.style.transformOrigin = 'top left';
-      containerRef.current.style.width = `${baseWidth}px`;
-      containerRef.current.style.height = `${baseHeight}px`;
-
-      if (containerRef.current.parentElement) {
-        containerRef.current.parentElement.style.overflow = 'hidden';
-      }
-    }
-  }, [width, height]);
-
-  let staticData = {
-    player1: "J. DOE",
-    player2: "A. SMITH",
+  const staticData = {
+    player1: 'J. DOE',
+    player2: 'A. SMITH',
     score1: [0, 0, 0],
     score2: [0, 0, 0],
     currentGamePoints1: 0,
     currentGamePoints2: 0,
-    servingPlayer: "player2",
+    servingPlayer: 'player2',
   };
   const scoreboardData = liveData || staticData;
 
@@ -69,77 +59,284 @@ function TennisScoreboard({
           <Image
             src={arrowImageUrl}
             alt="Serving Arrow"
-            width={50}
-            height={50}
+            width={50 * scale}
+            height={50 * scale}
           />
         );
       }
-      return <span className="text-yellow-400 text-4xl">▶</span>;
+      return (
+        <span
+          style={{ fontSize: `${40 * scale}px`, color: '#facc15' }}
+        >
+          ▶
+        </span>
+      );
     }
-    return <div className="w-[50px]"></div>;
+    return <div style={{ width: `${50 * scale}px` }}></div>;
   };
 
   return (
-    <div className="bg-black" style={{ width: `${width}px`, height: `${height}px`, overflow: 'hidden' }}>
-      <div ref={containerRef} className="flex flex-col w-full h-full text-white font-sans">
-        <header className="flex-[0_0_62.5px] flex justify-between items-center bg-[#1a3c5a] w-full px-[12.5px]">
-          <Image src={venueLogoUrl} alt="Venue Logo" width={250} height={40} />
-          <Image src={eventLogoUrl} alt="Event Logo" width={250} height={50} />
-        </header>
+    <div 
+      style={{ 
+        position: 'relative',
+        width: `${width}px`,
+        height: `${height}px`,
+        backgroundColor: 'black',
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: `${scaledWidth}px`,
+          height: `${scaledHeight}px`,
+          transform: `scale(${scale})`,
+          transformOrigin: '0 0',
+          color: 'white',
+          fontFamily: 'sans-serif',
+        }}
+      >
+        {/* Scoreboard */}
+        <div
+          style={{
+            width: `${baseWidth}px`,
+            height: `${baseHeight}px`,
+          }}
+        >
+          <header
+            style={{
+              flex: `0 0 ${62.5 * scale}px`,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              backgroundColor: '#1a3c5a',
+              width: '100%',
+              paddingLeft: `${12.5 * scale}px`,
+              paddingRight: `${12.5 * scale}px`,
+            }}
+          >
+            <Image
+              src={venueLogoUrl}
+              alt="Venue Logo"
+              width={250 * scale}
+              height={40 * scale}
+            />
+            <Image
+              src={eventLogoUrl}
+              alt="Event Logo"
+              width={250 * scale}
+              height={50 * scale}
+            />
+          </header>
 
-        <main className="flex-1 flex flex-col w-full">
-          <div className="p-0 mt-[2px]">
-            <h1 className="text-[80px] leading-none m-0">{scoreboardData.player1}</h1>
-          </div>
-
-          <div className="flex w-full items-stretch">
-            <div className="flex-shrink-0 bg-[#1a3c5a]">
-              <Image src={tournamentLogoUrl} alt="Tournament Logo" width={395} height={117} />
+          <main
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              width: '100%',
+            }}
+          >
+            <div style={{ padding: 0, marginTop: `${2 * scale}px` }}>
+              <h1
+                style={{
+                  fontSize: `${80 * scale}px`,
+                  lineHeight: '1',
+                  margin: 0,
+                }}
+              >
+                {scoreboardData.player1}
+              </h1>
             </div>
 
-            <div className="flex flex-grow border-[5px] border-white">
-              <div className="flex flex-col justify-center items-center flex-grow border-r-[5px] border-white bg-[#1a3c5a]">
-                <div className="flex items-center my-[5px]">
-                  {normalizedScore1.map((score, index) => (
-                    <span key={index} className="min-w-[80px] text-center text-[100px] leading-none">
-                      {score}
-                    </span>
-                  ))}
-                </div>
-                <div className="flex items-center my-[5px]">
-                  {normalizedScore2.map((score, index) => (
-                    <span key={index} className="min-w-[80px] text-center text-[100px] leading-none">
-                      {score}
-                    </span>
-                  ))}
-                </div>
+            <div
+              style={{
+                display: 'flex',
+                width: '100%',
+                alignItems: 'stretch',
+              }}
+            >
+              <div
+                style={{
+                  flexShrink: 0,
+                  backgroundColor: '#1a3c5a',
+                }}
+              >
+                <Image
+                  src={tournamentLogoUrl}
+                  alt="Tournament Logo"
+                  width={395 * scale}
+                  height={117 * scale}
+                />
               </div>
 
-              <div className="flex flex-col justify-center items-center flex-grow">
-                <div className="flex items-center my-[5px]">
-                  <div className="w-[20px] flex justify-center items-center">
-                    {renderServingArrow('player1')}
+              <div
+                style={{
+                  display: 'flex',
+                  flexGrow: 1,
+                  border: `${5 * scale}px solid white`,
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flexGrow: 1,
+                    borderRight: `${5 * scale}px solid white`,
+                    backgroundColor: '#1a3c5a',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginTop: `${5 * scale}px`,
+                      marginBottom: `${5 * scale}px`,
+                    }}
+                  >
+                    {normalizedScore1.map((score, index) => (
+                      <span
+                        key={index}
+                        style={{
+                          minWidth: `${80 * scale}px`,
+                          textAlign: 'center',
+                          fontSize: `${100 * scale}px`,
+                          lineHeight: '1',
+                        }}
+                      >
+                        {score}
+                      </span>
+                    ))}
                   </div>
-                  <span className="min-w-[80px] text-center text-[100px] leading-none">
-                    {scoreboardData.currentGamePoints1}
-                  </span>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginTop: `${5 * scale}px`,
+                      marginBottom: `${5 * scale}px`,
+                    }}
+                  >
+                    {normalizedScore2.map((score, index) => (
+                      <span
+                        key={index}
+                        style={{
+                          minWidth: `${80 * scale}px`,
+                          textAlign: 'center',
+                          fontSize: `${100 * scale}px`,
+                          lineHeight: '1',
+                        }}
+                      >
+                        {score}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex items-center my-[5px]">
-                  <div className="w-[20px] flex justify-center items-center">
-                    {renderServingArrow('player2')}
+
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flexGrow: 1,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginTop: `${5 * scale}px`,
+                      marginBottom: `${5 * scale}px`,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${20 * scale}px`,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {renderServingArrow('player1')}
+                    </div>
+                    <span
+                      style={{
+                        minWidth: `${80 * scale}px`,
+                        textAlign: 'center',
+                        fontSize: `${100 * scale}px`,
+                        lineHeight: '1',
+                      }}
+                    >
+                      {scoreboardData.currentGamePoints1}
+                    </span>
                   </div>
-                  <span className="min-w-[80px] text-center text-[100px] leading-none">
-                    {scoreboardData.currentGamePoints2}
-                  </span>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginTop: `${5 * scale}px`,
+                      marginBottom: `${5 * scale}px`,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${20 * scale}px`,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {renderServingArrow('player2')}
+                    </div>
+                    <span
+                      style={{
+                        minWidth: `${80 * scale}px`,
+                        textAlign: 'center',
+                        fontSize: `${100 * scale}px`,
+                        lineHeight: '1',
+                      }}
+                    >
+                      {scoreboardData.currentGamePoints2}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="p-0">
-            <h1 className="text-[80px] leading-none m-0">{scoreboardData.player2}</h1>
-          </div>
-        </main>
+            <div style={{ padding: 0 }}>
+              <h1
+                style={{
+                  fontSize: `${80 * scale}px`,
+                  lineHeight: '1',
+                  margin: 0,
+                }}
+              >
+                {scoreboardData.player2}
+              </h1>
+            </div>
+          </main>
+        </div>
+      </div>
+
+      {/* Input Fields for Custom Resolution */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '10px',
+          left: '10px',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          padding: '10px',
+          borderRadius: '5px',
+          display: 'flex',
+          gap: '10px',
+          alignItems: 'center',
+        }}
+      >
+        
       </div>
     </div>
   );
