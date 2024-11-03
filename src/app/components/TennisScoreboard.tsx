@@ -26,15 +26,12 @@ function TennisScoreboard({
 }: TennisScoreboardProps) {
   const baseWidth = 896;
   const baseHeight = 512;
+  const headerHeight = 62.5;
 
-  // Calculate scale to fill container while maintaining aspect ratio
+  // Calculate scales
   const scaleX = width / baseWidth;
-  const scaleY = height / baseHeight;
+  const scaleY = (height - headerHeight) / (baseHeight - headerHeight);
   const scale = Math.min(scaleX, scaleY);
-
-  // Remove the centering calculations
-  const scaledWidth = baseWidth * scale;
-  const scaledHeight = baseHeight * scale;
 
   const liveData: ScoreboardData | null = useWebSocket(path, apiKey);
 
@@ -78,71 +75,75 @@ function TennisScoreboard({
   return (
     <div 
       style={{ 
-        position: 'relative',
         width: `${width}px`,
         height: `${height}px`,
         backgroundColor: 'black',
         overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
-      <div
+      {/* Fixed-height header that scales only horizontally */}
+      <header
         style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: `${scaledWidth}px`,
-          height: `${scaledHeight}px`,
-          transform: `scale(${scale})`,
-          transformOrigin: '0 0',
-          color: 'white',
-          fontFamily: 'sans-serif',
+          height: `${headerHeight}px`,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          backgroundColor: '#1a3c5a',
+          width: '100%',
+          padding: '0 12.5px',
         }}
       >
-        {/* Scoreboard */}
+        <Image
+          src={venueLogoUrl}
+          alt="Venue Logo"
+          width={220 * scaleX}
+          height={30}
+          style={{ objectFit: 'contain' }}
+        />
+        <Image
+          src={eventLogoUrl}
+          alt="Event Logo"
+          width={195 * scaleX}
+          height={20}
+          style={{ objectFit: 'contain' }}
+        />
+      </header>
+
+      {/* Main content that scales both horizontally and vertically */}
+      <div
+        style={{
+          flex: 1,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
         <div
           style={{
-            width: `${baseWidth}px`,
-            height: `${baseHeight}px`,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            transform: `scale(${scaleX})`,
+            transformOrigin: 'top left',
           }}
         >
-          <header
-            style={{
-              flex: `0 0 ${62.5 * scale}px`,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              backgroundColor: '#1a3c5a',
-              width: '100%',
-              paddingLeft: `${12.5 * scale}px`,
-              paddingRight: `${12.5 * scale}px`,
-            }}
-          >
-            <Image
-              src={venueLogoUrl}
-              alt="Venue Logo"
-              width={250 * scale}
-              height={40 * scale}
-            />
-            <Image
-              src={eventLogoUrl}
-              alt="Event Logo"
-              width={250 * scale}
-              height={50 * scale}
-            />
-          </header>
-
           <main
             style={{
-              flex: 1,
+              width: `${baseWidth}px`,
+              height: `${baseHeight - headerHeight}px`,
               display: 'flex',
               flexDirection: 'column',
-              width: '100%',
+              justifyContent: 'space-between',
+              color: 'white',
             }}
           >
-            <div style={{ padding: 0, marginTop: `${2 * scale}px` }}>
+            <div style={{ padding: 0, marginTop: '2px' }}>
               <h1
                 style={{
-                  fontSize: `${80 * scale}px`,
+                  fontSize: '80px',
                   lineHeight: '1',
                   margin: 0,
                 }}
@@ -310,7 +311,7 @@ function TennisScoreboard({
             <div style={{ padding: 0 }}>
               <h1
                 style={{
-                  fontSize: `${80 * scale}px`,
+                  fontSize: '80px',
                   lineHeight: '1',
                   margin: 0,
                 }}
@@ -320,23 +321,6 @@ function TennisScoreboard({
             </div>
           </main>
         </div>
-      </div>
-
-      {/* Input Fields for Custom Resolution */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '10px',
-          left: '10px',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          padding: '10px',
-          borderRadius: '5px',
-          display: 'flex',
-          gap: '10px',
-          alignItems: 'center',
-        }}
-      >
-        
       </div>
     </div>
   );

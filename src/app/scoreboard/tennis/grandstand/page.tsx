@@ -11,7 +11,7 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-black">
       <div style={{ width: resolution.width, height: resolution.height }}>
         <TennisScoreboard
           venueLogoUrl="/venue_logo.png"
@@ -23,7 +23,7 @@ export default function Page() {
           height={resolution.height}
         />
       </div>
-      <div className="p-4">
+      <div className="p-4 bg-black">
         <ResolutionInput onResolutionChange={handleResolutionChange} />
       </div>
     </div>
