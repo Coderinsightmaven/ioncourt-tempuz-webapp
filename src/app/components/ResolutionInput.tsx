@@ -24,18 +24,18 @@ const ResolutionInput: React.FC<ResolutionInputProps> = ({ onResolutionChange })
 
   return (
     <div className="p-4 bg-background/80 backdrop-blur-sm rounded-lg shadow-lg">
-      <h1 className='text-sm'>Enter Width x Height</h1>
+      <h1 className="text-sm mb-2">Enter Width x Height</h1>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex space-x-2 ">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex space-x-2">
           <FormField
             control={form.control}
             name="resolution"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input 
-                    {...field} 
-                    placeholder="Default: 896x512" 
+                  <Input
+                    {...field}
+                    placeholder="Default: 896x512"
                     className="w-36"
                   />
                 </FormControl>
